@@ -1,6 +1,6 @@
 import './App.css';
 import app from './firebase.init';
-import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import { createUserWithEmailAndPassword, getAuth, sendEmailVerification, signInWithEmailAndPassword } from "firebase/auth";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
@@ -14,28 +14,46 @@ function App() {
   const [registerd, setRegisterd] = useState(false);
   // For Form Validation
   const [validated, setValidated] = useState(false);
+  const [error, setError] = useState('');
 
 
   const handleOnSubmit = (e) => {
     e.preventDefault();
     // Form Validation Code Below
     const form = e.currentTarget;
-    if (form.checkValidity() === false) {
+    if (form.checkValidity() === false && !/(?=.* [!@#$%^&*])/.test(password)) {
       e.preventDefault();
       e.stopPropagation();
+      setError('Please include atleast one special charecter');
+      return;
     }
 
-    setValidated(true);
 
-    createUserWithEmailAndPassword(auth, email, password)
-      .then(result => {
-        const user = result.user;
-        console.log(user);
-      })
-      .catch(error => {
-        console.log(error.message);
-      })
+    setValidated(true);
+    setError('');
+
+    if (registerd) {
+      signInWithEmailAndPassword(auth, email, password)
+        .then(result => {
+          const user = result.user;
+          console.log(user);
+        })
+        .catch(error => {
+          console.error(error.message);
+        })
+    }
+    else {
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(result => {
+          const user = result.user;
+          console.log(user);
+        })
+        .catch(error => {
+          console.log(error.message);
+        })
+    }
   }
+
   const handleEmailBlur = (e) => {
     setEmail(e.target.value);
   }
@@ -44,6 +62,14 @@ function App() {
   }
   const handleCheckbox = e => {
     setRegisterd(e.target.checked);
+  }
+  // Email Verification
+  const verifyEmail = () => {
+    sendEmailVerification(auth.currentUser)
+      .then(() => {
+        console.log('Verification mail sent');
+      })
+
   }
   return (
     <div className="App">
@@ -58,6 +84,7 @@ function App() {
           <Form.Group className="mb-3" controlId="formBasicPassword">
             <Form.Label>Password</Form.Label>
             <Form.Control onBlur={handlePasswordBlur} type="password" placeholder="Password" required />
+            <p className='text-danger'>{error}</p>
           </Form.Group>
           <Form.Group className="mb-3" controlId="formBasicCheckbox">
             <Form.Check onChange={handleCheckbox} type="checkbox" label="Already Registerd?" />
