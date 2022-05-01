@@ -47,10 +47,12 @@ function App() {
         .then(result => {
           const user = result.user;
           console.log(user);
+          verifyEmail();
         })
         .catch(error => {
           console.log(error.message);
         })
+
     }
   }
 
@@ -68,6 +70,9 @@ function App() {
     sendEmailVerification(auth.currentUser)
       .then(() => {
         console.log('Verification mail sent');
+      })
+      .catch(error => {
+        console.log(error)
       })
 
   }
@@ -88,6 +93,7 @@ function App() {
           </Form.Group>
           <Form.Group className="mb-3" controlId="formBasicCheckbox">
             <Form.Check onChange={handleCheckbox} type="checkbox" label="Already Registerd?" />
+            <Button onClick={handlePasswordReset} variant="link">Link</Button>
           </Form.Group>
           <Button variant="primary" type="submit">
             {registerd ? 'Login' : 'Register'}
